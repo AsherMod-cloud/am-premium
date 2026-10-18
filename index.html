@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Alight Motion Premium — Miku Moe</title>
+<link rel="stylesheet" href="style.css" />
+<script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+<div class="bg-glow"></div>
+
+<div class="container">
+  <header class="header">
+    <p class="brand">Miku Moe</p>
+    <h1>Alight Motion <span class="gradient-text">Premium</span></h1>
+  </header>
+
+  <!-- api key -->
+  <div class="card api-key-card">
+    <div class="api-key-left">
+      <span class="label">API KEY</span>
+      <span class="key-text">Miku Moe Mod</span>
+    </div>
+    <button class="btn-copy" onclick="copyKey()">
+      Salin
+    </button>
+  </div>
+
+  <!-- form: send link -->
+  <div class="card">
+    <h2 class="card-title">Kirim Magic Link</h2>
+    <p class="card-desc">Link login dari Alight Creative dikirim ke email ini.</p>
+    <input type="email" id="email" placeholder="Miku Moe Mod" autocomplete="email" />
+    <button class="btn-primary" id="btnSend" onclick="sendLink()">Kirim Magic Link</button>
+  </div>
+
+  <!-- form: verify -->
+  <div class="card">
+    <h2 class="card-title">Verifikasi Akun</h2>
+    <p class="card-desc">Salin raw link (tautan mentah) dari email, tempel di sini. Kedaluwarsa ±2 menit.</p>
+    <textarea id="rawLink" rows="4" placeholder="https://alightcreative.com/auth/action?mode=signIn&oobCode=..."></textarea>
+    <button class="btn-primary" id="btnVerify" onclick="verifyLink()">Verifikasi</button>
+  </div>
+
+  <!-- form: activate -->
+  <div class="card">
+    <h2 class="card-title">Aktifkan Premium 1 Tahun</h2>
+    <p class="card-desc">Lisensi VIP 1 tahun untuk akun yang terverifikasi.</p>
+    <button class="btn-primary btn-disabled" id="btnActivate" onclick="activatePremium()" disabled>Aktifkan Premium</button>
+  </div>
+
+  <!-- floating buttons -->
+  <div class="floating-actions">
+    <a href="https://t.me/" target="_blank" class="fab" aria-label="Telegram">
+      <i data-lucide="send"></i>
+    </a>
+    <a href="https://github.com/" target="_blank" class="fab" aria-label="Source Code">
+      <i data-lucide="code-2"></i>
+    </a>
+  </div>
+</div>
+
+<!-- toast -->
+<div id="toast" class="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
