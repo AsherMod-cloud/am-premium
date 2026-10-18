@@ -61,6 +61,45 @@
 <!-- toast -->
 <div id="toast" class="toast"></div>
 
+<!-- success modal overlay -->
+<div class="modal-overlay" id="successModal">
+  <div class="modal-card">
+    
+    <div class="modal-header-icon">
+      <i data-lucide="check"></i>
+    </div>
+    
+    <h2 class="modal-title">Unlock Berhasil</h2>
+    <p class="modal-subtitle">Akun kamu sudah premium.</p>
+    
+    <div class="modal-details">
+      <div class="detail-row">
+        <span class="detail-label">EMAIL</span>
+        <span class="detail-value" id="resEmail">-</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">UID</span>
+        <span class="detail-value" id="resUid">-</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">ORDER</span>
+        <span class="detail-value" id="resOrder">-</span>
+      </div>
+    </div>
+    
+    <div class="token-section">
+      <span class="detail-label">ID TOKEN</span>
+      <div class="token-box" id="resToken">-</div>
+    </div>
+    
+    <div class="modal-actions">
+      <button class="btn-outline" onclick="copyToken()">copy token</button>
+      <button class="btn-outline" onclick="unlockAgain()">unlock lagi</button>
+    </div>
+    
+  </div>
+</div>
+
 <script src="app.js"></script>
 </body>
 </html>

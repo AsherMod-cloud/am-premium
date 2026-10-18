@@ -8,7 +8,11 @@ const HEADERS = {
   'X-MikuMoe-UA': 'MikuMoe 18.10.2026/18'
 };
 
+// state
 let idTokenCache = null;
+let uidCache = null;
+let orderCache = null;
+let currentEmail = null;
 
 // ui helpers
 function toast(msg, type = 'info') {
@@ -46,7 +50,6 @@ async function sendLink() {
     const res = await post('/sendlink', { email });
     if (res.success) {
       toast('Magic link dikirim. Cek email!', 'success');
-      // email dibiarkan tetap ada
     } else {
       toast(res.message || 'Gagal mengirim link', 'error');
     }
@@ -70,8 +73,8 @@ async function verifyLink() {
     if (res.success) {
       toast('Verifikasi berhasil!', 'success');
       idTokenCache = res.idToken;
-      
-      // url link dibiarkan tetap ada
+      uidCache = res.uid;     // simpan uid
+      currentEmail = email;   // simpan email
       
       // unlock activation button
       const btnAct = document.getElementById('btnActivate');
@@ -88,27 +91,22 @@ async function verifyLink() {
 }
 
 async function activatePremium() {
-  const emailInput = document.getElementById('email');
-  const rawLinkInput = document.getElementById('rawLink');
-  const email = emailInput.value.trim();
-  
-  if (!email || !idTokenCache) return toast('Lakukan verifikasi terlebih dahulu', 'error');
+  if (!currentEmail || !idTokenCache) return toast('Lakukan verifikasi terlebih dahulu', 'error');
 
   setLoading('btnActivate', true);
   try {
-    const res = await post('/activated', { email, idToken: idTokenCache });
+    const res = await post('/activated', { email: currentEmail, idToken: idTokenCache });
     if (res.success) {
-      toast('Premium 1 Tahun Aktif!', 'success');
+      orderCache = res.orderId || res.order || 'unknown'; // jaga-jaga beda response key
       
-      // AUTO-CLEAR SEMUANYA DISINI SETELAH PREMIUM AKTIF
-      emailInput.value = '';
-      rawLinkInput.value = '';
-      idTokenCache = null; // reset cache biar aman
+      // populate modal data
+      document.getElementById('resEmail').textContent = currentEmail;
+      document.getElementById('resUid').textContent = uidCache || '-';
+      document.getElementById('resOrder').textContent = orderCache;
+      document.getElementById('resToken').textContent = idTokenCache;
       
-      // lock button lagi
-      const btnAct = document.getElementById('btnActivate');
-      btnAct.disabled = true;
-      btnAct.classList.add('btn-disabled');
+      // show modal
+      document.getElementById('successModal').classList.add('show');
       
     } else {
       toast(res.message || 'Gagal aktivasi', 'error');
@@ -118,4 +116,31 @@ async function activatePremium() {
   } finally {
     setLoading('btnActivate', false);
   }
+}
+
+// modal actions
+function copyToken() {
+  if (!idTokenCache) return;
+  navigator.clipboard.writeText(idTokenCache);
+  toast('Token berhasil disalin', 'success');
+}
+
+function unlockAgain() {
+  // hide modal
+  document.getElementById('successModal').classList.remove('show');
+  
+  // auto clear semua form & state
+  document.getElementById('email').value = '';
+  document.getElementById('rawLink').value = '';
+  idTokenCache = null;
+  uidCache = null;
+  orderCache = null;
+  currentEmail = null;
+  
+  // reset button
+  const btnAct = document.getElementById('btnActivate');
+  btnAct.disabled = true;
+  btnAct.classList.add('btn-disabled');
+  
+  toast('Siap untuk unlock berikutnya', 'info');
 }
