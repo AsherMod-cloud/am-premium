@@ -1,4 +1,4 @@
-// miku api backend — cloudflare pages functions
+// asher api backend — cloudflare pages functions
 // handles auth, verification, and premium activation
 
 const CFG = { 
@@ -74,16 +74,73 @@ const json = (d, s = 200) => new Response(JSON.stringify(d), {
   headers: { 'content-type': 'application/json', 'access-control-allow-origin': '*' }
 });
 
-export async function onRequestPost({ request, params }) {
-  // header validation
-  const key = request.headers.get('X-Miku-Moe-Key');
-  const ua = request.headers.get('X-MikuMoe-UA');
+async function verifyTurnstile(token, ip, env) {
+  if (!token) return false;
+  const formData = new FormData();
+  formData.append('secret', env.TURNSTILE_SECRET_KEY);
+  formData.append('response', token);
+  formData.append('remoteip', ip);
+  
+  const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+    method: 'POST',
+    body: formData
+  });
+  const outcome = await res.json();
+  return outcome.success;
+}
 
-  if (key !== 'Miku Moe Mod') {
-    return json({ success: false, message: 'Butuh key dulu ya sayang tanpa itu bakal gagal nanti' }, 401);
+async function checkRateLimit(ip, env) {
+  const key = `rate:${ip}`;
+  const limit = 5; // max 5 request
+  const window = 600; // per 10 menit (600 detik)
+  
+  let data = await env.RATE_LIMIT.get(key, 'json');
+  const now = Math.floor(Date.now() / 1000);
+  
+  if (!data || (now - data.start) > window) {
+    data = { count: 1, start: now };
+    await env.RATE_LIMIT.put(key, JSON.stringify(data), { expirationTtl: window });
+    return { allowed: true };
   }
-  if (!ua || !ua.startsWith('MikuMoe')) {
-    return json({ success: false, message: 'User agent-nya salah ya sayang, pakai yang sesuai' }, 401);
+  
+  if (data.count >= limit) {
+    return { allowed: false };
+  }
+  
+  data.count++;
+  await env.RATE_LIMIT.put(key, JSON.stringify(data), { expirationTtl: window });
+  return { allowed: true };
+}
+
+const json = (d, s = 200) => new Response(JSON.stringify(d), {
+  status: s,
+  headers: { 'content-type': 'application/json', 'access-control-allow-origin': '*' }
+});
+
+export async function onRequestPost({ request, env, params }) {
+  const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+
+  // 1. CEK RATE LIMIT
+  const rate = await checkRateLimit(ip, env);
+  if (!rate.allowed) {
+    return json({ success: false, message: 'Terlalu banyak request. Coba lagi nanti.' }, 429);
+  }
+
+  // 2. CEK HEADERS (seperti sebelumnya)
+  const key = request.headers.get('X-Asher-Key');
+  const ua = request.headers.get('X-Asher-UA');
+  
+  if (key !== 'AsherMod Premium' || !ua || !ua.startsWith('AsherMod')) {
+    return json({ success: false, message: 'Header tidak valid' }, 401);
+ }
+
+  // 3. PARSE BODY & CEK TURNSTILE
+  let body;
+  try { body = await request.json(); } catch { return json({ success: false, message: 'invalid json' }, 400); }
+
+  const isHuman = await verifyTurnstile(body.cfToken, ip, env);
+  if (!isHuman) {
+    return json({ success: false, message: 'Verifikasi Turnstile gagal. Kamu bot?' }, 403);
   }
 
   const path = '/' + (params.path || []).join('/');
@@ -156,7 +213,7 @@ export async function onRequestOptions() {
     headers: {
       'access-control-allow-origin': '*',
       'access-control-allow-methods': 'GET, POST, OPTIONS',
-      'access-control-allow-headers': 'content-type, X-Miku-Moe-Key, X-MikuMoe-UA'
+      'access-control-allow-headers': 'content-type, X-Asher-Key, X-Asher-UA'
     }
   });
 }

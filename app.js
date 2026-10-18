@@ -1,11 +1,11 @@
 // init icons
 lucide.createIcons();
 
-const API_BASE = '/miku';
+const API_BASE = '/api';
 const HEADERS = {
   'Content-Type': 'application/json',
-  'X-Miku-Moe-Key': 'Miku Moe Mod',
-  'X-MikuMoe-UA': 'MikuMoe 18.10.2026/18'
+  'X-Asher-Key': 'AsherMod Premium',
+  'X-Asher-UA': 'AsherMod 2026/1'
 };
 
 // state
@@ -30,8 +30,23 @@ function setLoading(btnId, isLoading) {
   btn.textContent = isLoading ? 'Memproses...' : originalText;
 }
 
-// api calls
+// --- HELPER TURNSTILE ---
+function getTurnstileToken() {
+  // ngambil token dari widget turnstile cloudflare
+  const el = document.querySelector('[name="cf-turnstile-response"]');
+  return el ? el.value : null;
+}
+
+function resetTurnstile() {
+  if (window.turnstile) window.turnstile.reset();
+}
+// ------------------------
+
 async function post(endpoint, body) {
+  // Selalu sertakan cfToken di setiap request
+  const cfToken = getTurnstileToken();
+  body.cfToken = cfToken;
+
   const res = await fetch(`${API_BASE}${endpoint}`, {
     method: 'POST',
     headers: HEADERS,
@@ -52,9 +67,11 @@ async function sendLink() {
       toast('Magic link dikirim. Cek email!', 'success');
     } else {
       toast(res.message || 'Gagal mengirim link', 'error');
+      resetTurnstile(); // reset kalau gagal
     }
   } catch (err) {
     toast('Koneksi error', 'error');
+    resetTurnstile();
   } finally {
     setLoading('btnSend', false);
   }
@@ -72,19 +89,22 @@ async function verifyLink() {
     const res = await post('/verify', { email, rawLink });
     if (res.success) {
       toast('Verifikasi berhasil!', 'success');
-      idTokenCache = res.idToken;
-      uidCache = res.uid;     // simpan uid
-      currentEmail = email;   // simpan email
+      resetTurnstile(); // reset karena token udah kepake
       
-      // unlock activation button
+      idTokenCache = res.idToken;
+      uidCache = res.uid;
+      currentEmail = email;
+      
       const btnAct = document.getElementById('btnActivate');
       btnAct.disabled = false;
       btnAct.classList.remove('btn-disabled');
     } else {
       toast(res.message || 'Gagal verifikasi', 'error');
+      resetTurnstile();
     }
   } catch (err) {
     toast('Koneksi error', 'error');
+    resetTurnstile();
   } finally {
     setLoading('btnVerify', false);
   }
@@ -96,23 +116,33 @@ async function activatePremium() {
   setLoading('btnActivate', true);
   try {
     const res = await post('/activated', { email: currentEmail, idToken: idTokenCache });
+    
     if (res.success) {
-      orderCache = res.orderId || res.order || 'unknown'; // jaga-jaga beda response key
+      resetTurnstile(); // reset token
+      orderCache = res.orderId || res.order || 'unknown';
       
-      // populate modal data
+      let expiryText = 'Unknown';
+      const expiryMs = res.data?.result?.expiryTimeMillis;
+      if (expiryMs) {
+        const dateObj = new Date(Number(expiryMs));
+        expiryText = dateObj.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+      }
+
       document.getElementById('resEmail').textContent = currentEmail;
       document.getElementById('resUid').textContent = uidCache || '-';
+      document.getElementById('resExpiry').textContent = expiryText;
       document.getElementById('resOrder').textContent = orderCache;
       document.getElementById('resToken').textContent = idTokenCache;
       
-      // show modal
       document.getElementById('successModal').classList.add('show');
       
     } else {
       toast(res.message || 'Gagal aktivasi', 'error');
+      resetTurnstile();
     }
   } catch (err) {
     toast('Koneksi error', 'error');
+    resetTurnstile();
   } finally {
     setLoading('btnActivate', false);
   }

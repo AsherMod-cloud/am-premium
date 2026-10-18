@@ -6,6 +6,7 @@
 <title>Alight Motion Premium — AsherMod</title>
 <link rel="stylesheet" href="style.css" />
 <script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 <body>
 
@@ -41,11 +42,15 @@
   </div>
 
   <!-- form: activate -->
-  <div class="card">
-    <h2 class="card-title">Aktifkan Premium 1 Tahun</h2>
-    <p class="card-desc">Lisensi VIP 1 tahun untuk akun yang terverifikasi.</p>
-    <button class="btn-primary btn-disabled" id="btnActivate" onclick="activatePremium()" disabled>Aktifkan Premium</button>
-  </div>
+<div class="card">
+  <h2 class="card-title">Aktifkan Premium 1 Tahun</h2>
+  <p class="card-desc">Lisensi VIP 1 tahun untuk akun yang terverifikasi.</p>
+  
+  <!-- TURNSTILE WIDGET -->
+  <div class="cf-turnstile" data-sitekey="0x4AAAAAAFaoZfFEce8xyL17" data-theme="dark" style="margin-bottom: 16px;"></div>
+  
+  <button class="btn-primary btn-disabled" id="btnActivate" onclick="activatePremium()" disabled>Aktifkan Premium</button>
+</div>
 
   <!-- floating buttons -->
   <div class="floating-actions">
@@ -78,13 +83,16 @@
         <span class="detail-value" id="resEmail">-</span>
       </div>
       <div class="detail-row">
-        <span class="detail-label">UID</span>
-        <span class="detail-value" id="resUid">-</span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-label">ORDER</span>
-        <span class="detail-value" id="resOrder">-</span>
-      </div>
+       <span class="detail-label">UID</span>
+       <span class="detail-value" id="resUid">-</span>
+    </div>
+    <div class="detail-row">
+      <span class="detail-label">EXPIRES</span>
+      <span class="detail-value" id="resExpiry">-</span>
+    </div>
+    <div class="detail-row">
+     <span class="detail-label">ORDER</span>
+      <span class="detail-value" id="resOrder">-</span>
     </div>
     
     <div class="token-section">
