@@ -2,7 +2,7 @@
 lucide.createIcons();
 
 const API_BASE = '/miku';
-const HEADERS = { 
+const HEADERS = {
   'Content-Type': 'application/json',
   'X-Miku-Moe-Key': 'Miku Moe Mod',
   'X-MikuMoe-UA': 'MikuMoe 18.10.2026/18'
@@ -26,11 +26,6 @@ function setLoading(btnId, isLoading) {
   btn.textContent = isLoading ? 'Memproses...' : originalText;
 }
 
-function copyKey() {
-  navigator.clipboard.writeText('Miku Moe Mod');
-  toast('API Key berhasil disalin!', 'success');
-}
-
 // api calls
 async function post(endpoint, body) {
   const res = await fetch(`${API_BASE}${endpoint}`, {
@@ -43,7 +38,8 @@ async function post(endpoint, body) {
 
 // flows
 async function sendLink() {
-  const email = document.getElementById('email').value.trim();
+  const emailInput = document.getElementById('email');
+  const email = emailInput.value.trim();
   if (!email) return toast('Masukkan email dulu', 'error');
 
   setLoading('btnSend', true);
@@ -51,6 +47,7 @@ async function sendLink() {
     const res = await post('/sendlink', { email });
     if (res.success) {
       toast('Magic link dikirim. Cek email!', 'success');
+      emailInput.value = ''; // <-- CLEAR EMAIL SETELAH SUKSES
     } else {
       toast(res.message || 'Gagal mengirim link', 'error');
     }
@@ -63,7 +60,9 @@ async function sendLink() {
 
 async function verifyLink() {
   const email = document.getElementById('email').value.trim();
-  const rawLink = document.getElementById('rawLink').value.trim();
+  const rawLinkInput = document.getElementById('rawLink');
+  const rawLink = rawLinkInput.value.trim();
+  
   if (!email) return toast('Email wajib diisi', 'error');
   if (!rawLink) return toast('Raw link wajib diisi', 'error');
 
@@ -73,6 +72,8 @@ async function verifyLink() {
     if (res.success) {
       toast('Verifikasi berhasil!', 'success');
       idTokenCache = res.idToken;
+      
+      rawLinkInput.value = ''; // <-- CLEAR URL SETELAH SUKSES
       
       // unlock activation button
       const btnAct = document.getElementById('btnActivate');
