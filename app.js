@@ -38,8 +38,7 @@ async function post(endpoint, body) {
 
 // flows
 async function sendLink() {
-  const emailInput = document.getElementById('email');
-  const email = emailInput.value.trim();
+  const email = document.getElementById('email').value.trim();
   if (!email) return toast('Masukkan email dulu', 'error');
 
   setLoading('btnSend', true);
@@ -47,7 +46,7 @@ async function sendLink() {
     const res = await post('/sendlink', { email });
     if (res.success) {
       toast('Magic link dikirim. Cek email!', 'success');
-      emailInput.value = ''; // <-- CLEAR EMAIL SETELAH SUKSES
+      // email dibiarkan tetap ada
     } else {
       toast(res.message || 'Gagal mengirim link', 'error');
     }
@@ -60,8 +59,7 @@ async function sendLink() {
 
 async function verifyLink() {
   const email = document.getElementById('email').value.trim();
-  const rawLinkInput = document.getElementById('rawLink');
-  const rawLink = rawLinkInput.value.trim();
+  const rawLink = document.getElementById('rawLink').value.trim();
   
   if (!email) return toast('Email wajib diisi', 'error');
   if (!rawLink) return toast('Raw link wajib diisi', 'error');
@@ -73,7 +71,7 @@ async function verifyLink() {
       toast('Verifikasi berhasil!', 'success');
       idTokenCache = res.idToken;
       
-      rawLinkInput.value = ''; // <-- CLEAR URL SETELAH SUKSES
+      // url link dibiarkan tetap ada
       
       // unlock activation button
       const btnAct = document.getElementById('btnActivate');
@@ -90,7 +88,10 @@ async function verifyLink() {
 }
 
 async function activatePremium() {
-  const email = document.getElementById('email').value.trim();
+  const emailInput = document.getElementById('email');
+  const rawLinkInput = document.getElementById('rawLink');
+  const email = emailInput.value.trim();
+  
   if (!email || !idTokenCache) return toast('Lakukan verifikasi terlebih dahulu', 'error');
 
   setLoading('btnActivate', true);
@@ -98,6 +99,17 @@ async function activatePremium() {
     const res = await post('/activated', { email, idToken: idTokenCache });
     if (res.success) {
       toast('Premium 1 Tahun Aktif!', 'success');
+      
+      // AUTO-CLEAR SEMUANYA DISINI SETELAH PREMIUM AKTIF
+      emailInput.value = '';
+      rawLinkInput.value = '';
+      idTokenCache = null; // reset cache biar aman
+      
+      // lock button lagi
+      const btnAct = document.getElementById('btnActivate');
+      btnAct.disabled = true;
+      btnAct.classList.add('btn-disabled');
+      
     } else {
       toast(res.message || 'Gagal aktivasi', 'error');
     }
