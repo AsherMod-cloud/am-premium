@@ -2,7 +2,7 @@
 lucide.createIcons();
 
 const API_BASE = '/miku';
-const HEADERS = {
+const HEADERS = { 
   'Content-Type': 'application/json',
   'X-Miku-Moe-Key': 'Miku Moe Mod',
   'X-MikuMoe-UA': 'MikuMoe 18.10.2026/18'

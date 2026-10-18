@@ -1,7 +1,7 @@
 // miku api backend — cloudflare pages functions
 // handles auth, verification, and premium activation
 
-const CFG = {
+const CFG = { 
   key: 'AIzaSyDtG1AU22ErnQD60AzBAcaknySiz9_CEq0',
   idt: 'https://www.googleapis.com/identitytoolkit/v3/relyingparty',
   vfy: 'https://us-central1-alight-creative.cloudfunctions.net/verifyPurchase'
