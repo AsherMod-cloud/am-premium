@@ -69,6 +69,7 @@ function extractCode(raw) {
   return null;
 }
 
+// pindahin json kesini, hapus yang di bawah
 const json = (d, s = 200) => new Response(JSON.stringify(d), {
   status: s,
   headers: { 'content-type': 'application/json', 'access-control-allow-origin': '*' }
@@ -91,8 +92,8 @@ async function verifyTurnstile(token, ip, env) {
 
 async function checkRateLimit(ip, env) {
   const key = `rate:${ip}`;
-  const limit = 5; // max 5 request
-  const window = 600; // per 10 menit (600 detik)
+  const limit = 5;
+  const window = 600;
   
   let data = await env.RATE_LIMIT.get(key, 'json');
   const now = Math.floor(Date.now() / 1000);
@@ -112,42 +113,37 @@ async function checkRateLimit(ip, env) {
   return { allowed: true };
 }
 
-const json = (d, s = 200) => new Response(JSON.stringify(d), {
-  status: s,
-  headers: { 'content-type': 'application/json', 'access-control-allow-origin': '*' }
-});
-
 export async function onRequestPost({ request, env, params }) {
   const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
 
-  // 1. CEK RATE LIMIT
+  // 1. CEK HEADERS
+  const key = request.headers.get('X-Asher-Key');
+  const ua = request.headers.get('X-Asher-UA');
+  if (key !== 'AsherMod Premium' || !ua || !ua.startsWith('AsherMod')) {
+    return json({ success: false, message: 'Header tidak valid' }, 401);
+  }
+
+  // 2. CEK RATE LIMIT (setelah header valid)
   const rate = await checkRateLimit(ip, env);
   if (!rate.allowed) {
     return json({ success: false, message: 'Terlalu banyak request. Coba lagi nanti.' }, 429);
   }
 
-  // 2. CEK HEADERS (seperti sebelumnya)
-  const key = request.headers.get('X-Asher-Key');
-  const ua = request.headers.get('X-Asher-UA');
-  
-  if (key !== 'AsherMod Premium' || !ua || !ua.startsWith('AsherMod')) {
-    return json({ success: false, message: 'Header tidak valid' }, 401);
- }
-
-  // 3. PARSE BODY & CEK TURNSTILE
+  // 3. PARSE BODY
   let body;
   try { body = await request.json(); } catch { return json({ success: false, message: 'invalid json' }, 400); }
 
-  const isHuman = await verifyTurnstile(body.cfToken, ip, env);
-  if (!isHuman) {
-    return json({ success: false, message: 'Verifikasi Turnstile gagal. Kamu bot?' }, 403);
-  }
-
   const path = '/' + (params.path || []).join('/');
 
-  // 1. sendlink
+  // 4. LOGIC ROUTE
+
+  // sendlink (Wajib Turnstile di sini biar ga di-spam email)
   if (path === '/sendlink') {
     if (!body.email) return json({ success: false, message: 'email wajib' }, 400);
+    
+    const isHuman = await verifyTurnstile(body.cfToken, ip, env);
+    if (!isHuman) return json({ success: false, message: 'Verifikasi Turnstile gagal. Kamu bot?' }, 403);
+
     try {
       await jpost(`${CFG.idt}/createAuthUri?key=${CFG.key}`, {
         identifier: body.email, continueUri: 'http://localhost'
@@ -163,7 +159,7 @@ export async function onRequestPost({ request, env, params }) {
     } catch (e) { return json({ success: false, message: e.message }, 400); }
   }
 
-  // 2. verify
+  // verify
   if (path === '/verify') {
     if (!body.email || !body.rawLink) return json({ success: false, message: 'email & rawLink wajib' }, 400);
     const code = extractCode(body.rawLink);
@@ -177,7 +173,7 @@ export async function onRequestPost({ request, env, params }) {
     } catch (e) { return json({ success: false, message: e.message }, 400); }
   }
 
-  // 3. activated
+  // activated
   if (path === '/activated') {
     if (!body.email || !body.idToken) return json({ success: false, message: 'email & idToken wajib' }, 400);
     
