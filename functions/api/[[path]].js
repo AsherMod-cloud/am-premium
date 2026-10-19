@@ -77,6 +77,12 @@ const json = (d, s = 200) => new Response(JSON.stringify(d), {
 
 async function verifyTurnstile(token, ip, env) {
   if (!token) return false;
+  // Cek kalau secret key belum di-set
+  if (!env.TURNSTILE_SECRET_KEY) {
+    console.error("TURNSTILE_SECRET_KEY tidak ditemukan di Environment Variables!");
+    return false; 
+  }
+
   const formData = new FormData();
   formData.append('secret', env.TURNSTILE_SECRET_KEY);
   formData.append('response', token);
@@ -91,6 +97,12 @@ async function verifyTurnstile(token, ip, env) {
 }
 
 async function checkRateLimit(ip, env) {
+  // Cek kalau KV binding belum di-set
+  if (!env.RATE_LIMIT) {
+    console.error("Binding KV 'RATE_LIMIT' tidak ditemukan!");
+    return { allowed: true }; // Bypass limit sementara biar web tetep jalan
+  }
+
   const key = `rate:${ip}`;
   const limit = 5;
   const window = 600;
