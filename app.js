@@ -25,14 +25,27 @@ function toast(msg, type = 'info') {
 function setLoading(btnId, isLoading) {
   const btn = document.getElementById(btnId);
   btn.disabled = isLoading;
-  const originalText = btn.dataset.originalText || btn.textContent;
-  if (!btn.dataset.originalText) btn.dataset.originalText = originalText;
-  btn.textContent = isLoading ? 'Memproses...' : originalText;
+  const span = btn.querySelector('span');
+  if (!btn.dataset.originalText && span) btn.dataset.originalText = span.textContent;
+  
+  if (span) {
+    span.textContent = isLoading ? 'Memproses...' : btn.dataset.originalText;
+  }
+}
+
+function updateStepIndicator(stepNumber) {
+  for (let i = 1; i <= 3; i++) {
+    const dot = document.getElementById(`dot-${i}`);
+    if (i <= stepNumber) {
+      dot.classList.add('active');
+    } else {
+      dot.classList.remove('active');
+    }
+  }
 }
 
 // --- HELPER TURNSTILE ---
 function getTurnstileToken() {
-  // ngambil token dari widget turnstile cloudflare
   const el = document.querySelector('[name="cf-turnstile-response"]');
   return el ? el.value : null;
 }
@@ -43,7 +56,6 @@ function resetTurnstile() {
 // ------------------------
 
 async function post(endpoint, body) {
-  // Selalu sertakan cfToken di setiap request
   const cfToken = getTurnstileToken();
   body.cfToken = cfToken;
 
@@ -58,19 +70,20 @@ async function post(endpoint, body) {
 // flows
 async function sendLink() {
   const email = document.getElementById('email').value.trim();
-  if (!email) return toast('Masukkan email dulu', 'error');
+  if (!email) return toast('Masukkan email terlebih dahulu', 'error');
 
   setLoading('btnSend', true);
   try {
     const res = await post('/sendlink', { email });
     if (res.success) {
-      toast('Magic link dikirim. Cek email!', 'success');
+      toast('Magic link terkirim. Silakan cek email!', 'success');
+      updateStepIndicator(2); // Advance step to 2
     } else {
       toast(res.message || 'Gagal mengirim link', 'error');
-      resetTurnstile(); // reset kalau gagal
+      resetTurnstile();
     }
   } catch (err) {
-    toast('Koneksi error', 'error');
+    toast('Terjadi kesalahan koneksi', 'error');
     resetTurnstile();
   } finally {
     setLoading('btnSend', false);
@@ -89,7 +102,7 @@ async function verifyLink() {
     const res = await post('/verify', { email, rawLink });
     if (res.success) {
       toast('Verifikasi berhasil!', 'success');
-      resetTurnstile(); // reset karena token udah kepake
+      resetTurnstile();
       
       idTokenCache = res.idToken;
       uidCache = res.uid;
@@ -98,12 +111,13 @@ async function verifyLink() {
       const btnAct = document.getElementById('btnActivate');
       btnAct.disabled = false;
       btnAct.classList.remove('btn-disabled');
+      updateStepIndicator(3); // Advance step to 3
     } else {
       toast(res.message || 'Gagal verifikasi', 'error');
       resetTurnstile();
     }
   } catch (err) {
-    toast('Koneksi error', 'error');
+    toast('Terjadi kesalahan koneksi', 'error');
     resetTurnstile();
   } finally {
     setLoading('btnVerify', false);
@@ -118,7 +132,7 @@ async function activatePremium() {
     const res = await post('/activated', { email: currentEmail, idToken: idTokenCache });
     
     if (res.success) {
-      resetTurnstile(); // reset token
+      resetTurnstile();
       orderCache = res.orderId || res.order || 'unknown';
       
       let expiryText = 'Unknown';
@@ -141,7 +155,7 @@ async function activatePremium() {
       resetTurnstile();
     }
   } catch (err) {
-    toast('Koneksi error', 'error');
+    toast('Terjadi kesalahan koneksi', 'error');
     resetTurnstile();
   } finally {
     setLoading('btnActivate', false);
@@ -152,14 +166,12 @@ async function activatePremium() {
 function copyToken() {
   if (!idTokenCache) return;
   navigator.clipboard.writeText(idTokenCache);
-  toast('Token berhasil disalin', 'success');
+  toast('Token berhasil disalin ke clipboard!', 'success');
 }
 
 function unlockAgain() {
-  // hide modal
   document.getElementById('successModal').classList.remove('show');
   
-  // auto clear semua form & state
   document.getElementById('email').value = '';
   document.getElementById('rawLink').value = '';
   idTokenCache = null;
@@ -167,10 +179,10 @@ function unlockAgain() {
   orderCache = null;
   currentEmail = null;
   
-  // reset button
   const btnAct = document.getElementById('btnActivate');
   btnAct.disabled = true;
   btnAct.classList.add('btn-disabled');
   
-  toast('Siap untuk unlock berikutnya', 'info');
+  updateStepIndicator(1);
+  toast('Siap untuk unlock akun berikutnya', 'info');
 }

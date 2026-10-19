@@ -11,71 +11,128 @@
 <body>
 
 <div class="bg-glow"></div>
+<div class="bg-glow-2"></div>
 
 <div class="container">
+  <!-- Header -->
   <header class="header">
-    <p class="brand">AsherMod</p>
+    <div class="brand-badge">
+      <i data-lucide="sparkles" class="badge-icon"></i>
+      <span>AsherMod VIP</span>
+    </div>
     <h1>Alight Motion <span class="gradient-text">Premium</span></h1>
+    <p class="header-subtitle">Secure Automated Activation Panel</p>
   </header>
 
-  <!-- deskripsi web -->
+  <!-- Notice Card -->
   <div class="card desc-card">
+    <div class="desc-icon">
+      <i data-lucide="info"></i>
+    </div>
     <p class="desc-text">
-      Website ini untuk mengirim magic link Alight Premium, tools ini gratis tanpa biaya tapi ingat gunakan dengan bijak dan jangan dijual belikan, Develop by <a href="https://asher-mod-bio.pages.dev" target="_blank">AsherMod</a>.
+      Tools gratis pengiriman magic link resmi Alight Creative. Gunakan dengan bijak & jangan diperjualbelikan. Developed by <a href="https://asher-mod-bio.pages.dev" target="_blank">AsherMod</a>.
     </p>
   </div>
 
-  <!-- form: send link -->
-  <div class="card">
-    <h2 class="card-title">Kirim Magic Link</h2>
-    <p class="card-desc">Link login dari Alight Creative dikirim ke email ini.</p>
-    <input type="email" id="email" placeholder="user@example.com" autocomplete="email" />
-    <button class="btn-primary" id="btnSend" onclick="sendLink()">Kirim Magic Link</button>
+  <!-- Step Indicator -->
+  <div class="step-indicator">
+    <div class="step-dot active" id="dot-1">1</div>
+    <div class="step-line"></div>
+    <div class="step-dot" id="dot-2">2</div>
+    <div class="step-line"></div>
+    <div class="step-dot" id="dot-3">3</div>
   </div>
 
-  <!-- form: verify -->
-  <div class="card">
-    <h2 class="card-title">Verifikasi Akun</h2>
-    <p class="card-desc">Salin raw link (tautan mentah) dari email, tempel di sini. Kedaluwarsa ±2 menit.</p>
-    <textarea id="rawLink" rows="4" placeholder="https://alightcreative.com/auth/action?mode=signIn&oobCode=..."></textarea>
-    <button class="btn-primary" id="btnVerify" onclick="verifyLink()">Verifikasi</button>
+  <!-- Step 1: Send Link -->
+  <div class="card active-step-card" id="step-card-1">
+    <div class="card-header-flex">
+      <div>
+        <span class="step-number">LANGKAH 01</span>
+        <h2 class="card-title">Kirim Magic Link</h2>
+      </div>
+      <div class="step-icon"><i data-lucide="mail"></i></div>
+    </div>
+    <p class="card-desc">Link login resmi dari Alight Creative akan dikirim langsung ke email kamu.</p>
+    
+    <div class="input-group">
+      <i data-lucide="at-sign" class="input-icon"></i>
+      <input type="email" id="email" placeholder="nama@example.com" autocomplete="email" />
+    </div>
+    
+    <button class="btn-primary" id="btnSend" onclick="sendLink()">
+      <span>Kirim Magic Link</span>
+      <i data-lucide="arrow-right"></i>
+    </button>
   </div>
 
-  <!-- form: activate -->
-<div class="card">
-  <h2 class="card-title">Aktifkan Premium 1 Tahun</h2>
-  <p class="card-desc">Lisensi VIP 1 tahun untuk akun yang terverifikasi.</p>
-  
-  <!-- TURNSTILE WIDGET -->
-  <div class="cf-turnstile" data-sitekey="0x4AAAAAAFaoZfFEce8xyL17" data-theme="dark" style="margin-bottom: 16px;"></div>
-  
-  <button class="btn-primary btn-disabled" id="btnActivate" onclick="activatePremium()" disabled>Aktifkan Premium</button>
-</div>
+  <!-- Step 2: Verify -->
+  <div class="card" id="step-card-2">
+    <div class="card-header-flex">
+      <div>
+        <span class="step-number">LANGKAH 02</span>
+        <h2 class="card-title">Verifikasi Akun</h2>
+      </div>
+      <div class="step-icon"><i data-lucide="key-round"></i></div>
+    </div>
+    <p class="card-desc">Salin raw link (tautan mentah) dari email masuk, lalu tempel di bawah. Kedaluwarsa ±2 menit.</p>
+    
+    <div class="input-group textarea-group">
+      <textarea id="rawLink" rows="3" placeholder="https://alightcreative.com/auth/action?mode=signIn&oobCode=..."></textarea>
+    </div>
+    
+    <button class="btn-primary" id="btnVerify" onclick="verifyLink()">
+      <span>Verifikasi Akun</span>
+      <i data-lucide="check-circle-2"></i>
+    </button>
+  </div>
 
-  <!-- floating buttons -->
+  <!-- Step 3: Activate -->
+  <div class="card" id="step-card-3">
+    <div class="card-header-flex">
+      <div>
+        <span class="step-number">LANGKAH 03</span>
+        <h2 class="card-title">Aktivasi VIP 1 Tahun</h2>
+      </div>
+      <div class="step-icon"><i data-lucide="shield-check"></i></div>
+    </div>
+    <p class="card-desc">Selesaikan verifikasi keamanan Cloudflare dan aktifkan lisensi VIP tahunanmu.</p>
+    
+    <!-- TURNSTILE WIDGET -->
+    <div class="turnstile-container">
+      <div class="cf-turnstile" data-sitekey="0x4AAAAAAFaoZfFEce8xyL17" data-theme="dark"></div>
+    </div>
+    
+    <button class="btn-primary btn-disabled" id="btnActivate" onclick="activatePremium()" disabled>
+      <span>Aktifkan Premium Sekarang</span>
+      <i data-lucide="zap"></i>
+    </button>
+  </div>
+
+  <!-- Floating Actions -->
   <div class="floating-actions">
-    <a href="https://t.me/" target="_blank" class="fab" aria-label="Telegram">
+    <a href="https://t.me/Unkncwn_x" target="_blank" class="fab" aria-label="Telegram">
       <i data-lucide="send"></i>
+      <span>Channel</span>
     </a>
     <a href="https://asher-mod-bio.pages.dev" target="_blank" class="fab" aria-label="Profile">
       <i data-lucide="user"></i>
+      <span>Profile</span>
     </a>
   </div>
 </div>
 
-<!-- toast -->
+<!-- Toast Notification -->
 <div id="toast" class="toast"></div>
 
-<!-- success modal overlay -->
+<!-- Success Modal Overlay -->
 <div class="modal-overlay" id="successModal">
   <div class="modal-card">
-    
     <div class="modal-header-icon">
-      <i data-lucide="check"></i>
+      <i data-lucide="sparkles"></i>
     </div>
     
-    <h2 class="modal-title">Unlock Berhasil</h2>
-    <p class="modal-subtitle">Akun kamu sudah premium.</p>
+    <h2 class="modal-title">Unlock Berhasil! 🎉</h2>
+    <p class="modal-subtitle">Akun Alight Motion kamu kini sudah resmi berstatus Premium.</p>
     
     <div class="modal-details">
       <div class="detail-row">
@@ -83,28 +140,32 @@
         <span class="detail-value" id="resEmail">-</span>
       </div>
       <div class="detail-row">
-       <span class="detail-label">UID</span>
-       <span class="detail-value" id="resUid">-</span>
-    </div>
-    <div class="detail-row">
-      <span class="detail-label">EXPIRES</span>
-      <span class="detail-value" id="resExpiry">-</span>
-    </div>
-    <div class="detail-row">
-     <span class="detail-label">ORDER</span>
-      <span class="detail-value" id="resOrder">-</span>
+        <span class="detail-label">UID</span>
+        <span class="detail-value" id="resUid">-</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">EXPIRES</span>
+        <span class="detail-value" id="resExpiry">-</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">ORDER ID</span>
+        <span class="detail-value" id="resOrder">-</span>
+      </div>
     </div>
     
     <div class="token-section">
-      <span class="detail-label">ID TOKEN</span>
+      <span class="detail-label">ID TOKEN AUTHENTICATION</span>
       <div class="token-box" id="resToken">-</div>
     </div>
     
     <div class="modal-actions">
-      <button class="btn-outline" onclick="copyToken()">copy token</button>
-      <button class="btn-outline" onclick="unlockAgain()">unlock lagi</button>
+      <button class="btn-outline" onclick="copyToken()">
+        <i data-lucide="copy"></i> Salin Token
+      </button>
+      <button class="btn-primary-modal" onclick="unlockAgain()">
+        <i data-lucide="rotate-ccw"></i> Unlock Lagi
+      </button>
     </div>
-    
   </div>
 </div>
 
