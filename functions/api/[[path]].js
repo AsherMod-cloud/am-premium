@@ -144,8 +144,6 @@ export async function onRequestPost({ request, env, params }) {
   }
 
   const path = '/' + (params.path || []).join('/');
-  let body;
-  try { body = await request.json(); } catch { return json({ success: false, message: 'invalid json' }, 400); }
 
   // 1. sendlink
   if (path === '/sendlink') {
